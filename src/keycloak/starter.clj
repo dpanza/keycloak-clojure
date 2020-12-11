@@ -73,13 +73,13 @@
          {:username (apply username-creator-fn role group subgroup idx opts)
           :password "password"}))
 
-(defn init-realm! [^org.keycloak.admin.client.Keycloak admin-client {:keys [name themes login tokens smtp] :as realm-data}]
+(defn init-realm! [^org.keycloak.admin.client.Keycloak admin-client {:keys [name themes login tokens attributes smtp] :as realm-data}]
   (println (format "Will create realm \"%s\"" name))
-  (try (create-realm! admin-client name themes login tokens smtp)
+  (try (create-realm! admin-client name themes login tokens attributes smtp)
        (println (format "Realm \"%s\" created" name))
        (catch javax.ws.rs.ClientErrorException cee
          (when (= (-> cee (.getResponse) (.getStatus)) 409)
-           (update-realm! admin-client name themes login tokens smtp)
+           (update-realm! admin-client name themes login tokens attributes smtp)
            (println (format "Realm \"%s\" updated" name))))
        (catch Exception e (println "Can't create Realm" e)(get-realm admin-client name))))
 

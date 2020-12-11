@@ -35,12 +35,13 @@
 (defn realm-representation
   (^org.keycloak.representations.idm.RealmRepresentation [realm-name]
    (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setId realm-name)))
-  (^org.keycloak.representations.idm.RealmRepresentation [realm-name themes login tokens smtp]
+  (^org.keycloak.representations.idm.RealmRepresentation [realm-name themes login tokens attributes smtp]
    (let [^org.keycloak.representations.idm.RealmRepresentation realm-rep (realm-representation realm-name)]
      (cond-> realm-rep
              themes (set-all! themes)
              login  (set-all! login)
-             tokens (set-all! tokens))
+             tokens (set-all! tokens)
+             attributes (set-attributes attributes))
      (when smtp
        (.setSmtpServer realm-rep (ks->str smtp)))
      realm-rep)))
@@ -55,16 +56,16 @@
    (-> keycloak-client (.realms) (.create (realm-representation realm-name)))
    (info "realm" realm-name "created")
    (get-realm keycloak-client realm-name))
-  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name themes login tokens smtp]
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name themes login tokens attributes smtp]
    (info "create realm" realm-name)
-   (let [realm-rep (realm-representation realm-name themes login tokens smtp)]
+   (let [realm-rep (realm-representation realm-name themes login tokens attributes smtp)]
      (-> keycloak-client (.realms) (.create realm-rep)))
    (info "realm" realm-name "created")
    (get-realm keycloak-client realm-name)))
 
-(defn update-realm! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name themes login tokens smtp]
+(defn update-realm! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name themes login tokens attributes smtp]
   (info "update realm" realm-name)
-  (let [realm-rep (realm-representation realm-name themes login tokens smtp)]
+  (let [realm-rep (realm-representation realm-name themes login tokens attributes smtp)]
     (-> keycloak-client (.realms) (.realm realm-name) (.update realm-rep)))
   (info "realm" realm-name "updated")
   (get-realm keycloak-client realm-name))
